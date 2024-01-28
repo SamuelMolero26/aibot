@@ -25,42 +25,50 @@ TOUCH_SENSOR_PIN = 4
 GPIO.setup(TOUCH_SENSOR_PIN, GPIO.IN)
 
 def textGenerator():
-    # initializing the microphone
     reader = sr.Recognizer()
     reader.pause_threshold = 0.6
     reader.non_speaking_duration = 0.2  
     
-    # read microphone
+    # Read from the microphone
     with sr.Microphone() as source:
         print("Howdy to start listening")
+        
+        # Wait for "Howdy" to start listening
         while True:
-            
             audio = reader.listen(source)
-            print(audio)
             try:
                 text = reader.recognize_google(audio)
-                if "howdy" in text.lower(): # start listening when "Howdy"
+                if "howdy" in text.lower():
                     print("Listening......")
                     break
-                if keyboard.is_pressed():  
+                if keyboard.is_pressed('esc'):
                     print("Stopped listening.")
                     return None
-            except:
+            except sr.UnknownValueError:
                 pass
-        if keyboard.is_pressed(): 
-            print("Stopped listening.")
-            return None
-        audio = reader.listen(source)
-        try:
-            text = reader.recognize_google(audio)
-            print("You said : {}".format(text))
-            return text
-        except:
-            if keyboard.is_pressed(): 
+            except sr.RequestError as e:
+                print(f"Could not request results from Google Speech Recognition service; {e}")
+
+        # Continuous listening loop
+        while True:
+            audio = reader.listen(source)
+            try:
+                text = reader.recognize_google(audio)
+                print("You said: {}".format(text))
+                return text
+            except sr.UnknownValueError:
+                pass
+            except sr.RequestError as e:
+                print(f"Could not request results from Google Speech Recognition service; {e}")
+            except KeyboardInterrupt:
                 print("Stopped listening.")
                 return None
-            print("Sorry could not recognize what you said")
-            return None
+            except Exception as e:
+                print(f"Error: {e}")
+            
+            if keyboard.is_pressed('esc'):
+                print("Stopped listening.")
+                return None
 
 def openChat(prompt):
     if prompt.lower() == "read notification":
