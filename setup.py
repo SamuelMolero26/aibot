@@ -7,8 +7,9 @@ import openai
 import os
 from dotenv import load_dotenv
 import keyboard
-import RLPCD
 from RPLCD import CharLCD
+import time
+import RPi.GPIO as GPIO
 
 
 
@@ -16,6 +17,12 @@ from RPLCD import CharLCD
 load_dotenv()
 
 openai.api_key = os.getenv("CLIENT_KEY")
+
+GPIO.setmode(GPIO.BCM)
+
+TOUCH_SENSOR_PIN = 4
+
+GPIO.setup(TOUCH_SENSOR_PIN, GPIO.IN)
 
 def textGenerator():
     # initializing the microphone
@@ -68,10 +75,24 @@ def openChat(prompt):
             max_tokens=100
         )
         return response.choices[0].message.content.strip()
+def measure_heart_rate():
+    heartbeats = 0
 
-def display_response(response):
+    start_time = time.time()
+    while time.time() - start_time < 15:
+        if GPIO.input(TOUCH_SENSOR_PIN):
+            heartbeats += 1
+            
+            time.sleep(0.6)
+    heart_rate = heartbeats * 4
+
+    return heart_rate
+
+def display_response(response,hear_rate):
     lcd = CharLCD(cols=16, rows=2, pin_rs=37, pin_e=35, pins_data=[40, 38, 36, 32, 33, 31, 29, 23])
     lcd.write_string(u'{}'.format(response))
+    lcd.write_string(u'{} HR: {}'.format(response, heart_rate))
+    
    
 
 if __name__ == '__main__':
@@ -79,7 +100,9 @@ if __name__ == '__main__':
         prompt = textGenerator()
         if prompt is not None:
             response = openChat(prompt)
-            display_response(response)
+            heart_rate = measure_heart_rate()  
+            display_response(response, heart_rate)
             print("AI: ", response)
+            
         else:
             break
