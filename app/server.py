@@ -2,7 +2,7 @@
 from flask import Flask, render_template, session
 from flask.ctx import RequestContext
 from flask import redirect, request, url_for
-import jsonify
+from flask import jsonify
 
 
 app = Flask(__name__)
