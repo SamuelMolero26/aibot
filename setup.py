@@ -21,7 +21,6 @@ openai.api_key = os.getenv("CLIENT_KEY")
 GPIO.setmode(GPIO.BCM)
 
 TOUCH_SENSOR_PIN = 4
-
 GPIO.setup(TOUCH_SENSOR_PIN, GPIO.IN)
 
 def textGenerator():
