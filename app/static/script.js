@@ -2,6 +2,7 @@ const todoInput = document.querySelector(".todo-input");
 const todoButton = document.querySelector(".todo-button");
 const todoList = document.querySelector(".todo-list");
 const filterOption = document.querySelector(".filter-todo");
+let todos = [];
 
 document.addEventListener("DOMContentLoaded", getLocalTodos);
 todoButton.addEventListener("click", addTodo);
@@ -89,6 +90,7 @@ function saveLocalTodos(todo) {
 }
 
 function getLocalTodos() {
+
     let todos;
     if(localStorage.getItem("todos") === null) {
         todos = [];
@@ -114,6 +116,9 @@ function getLocalTodos() {
         todoDiv.appendChild(trashButton);
 
         todoList.appendChild(todoDiv);
+
+        todos.push(newTodo.innerText);
+
     });
 
     if (Notification.permission === "granted") {
