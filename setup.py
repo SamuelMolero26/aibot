@@ -28,6 +28,8 @@ def textGenerator():
     reader = sr.Recognizer()
     reader.pause_threshold = 0.6
     reader.non_speaking_duration = 0.2  
+    microphones = sr.Microphone.list_microphone_names()
+    print(mircrophones)
     
     # Read from the microphone
     with sr.Microphone() as source:
