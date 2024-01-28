@@ -14,9 +14,12 @@ import keyboard
 load_dotenv()
 
 openai.api_key = os.getenv("CLIENT_KEY")
-driver = webdriver.Firefox()
+# driver = webdriver.Firefox()
 
-driver.get('http://your-web-page.com')
+# driver.get('http://127.0.0.1:5000/todo')
+
+
+
 def textGenerator():
     #intializing the microphone
     reader = sr.Recognizer()
@@ -68,6 +71,7 @@ def openChat(prompt):
             max_tokens=100
         )
         return response.choices[0].message.content.strip()
+
 if __name__ == '__main__':
    while True:
         prompt = textGenerator()

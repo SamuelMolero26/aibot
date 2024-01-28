@@ -50,8 +50,9 @@ def dashboard():
     else:
         return redirect(url_for('login'))
     
-@app.route('/todo')
+@app.route('/todo', methods=['GET','POST'])
 def todo():
+    todo_item = request.form.get('todo_item')
     return render_template('features/todo.html')
 
 
