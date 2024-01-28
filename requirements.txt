@@ -7,3 +7,5 @@ pyaudio
 SpeechRecognition
 openai
 keyboard
+RPLCD
+RPi.GPIO

@@ -34,7 +34,9 @@ def textGenerator():
     with sr.Microphone() as source:
         print("Howdy to start listening")
         while True:
+            
             audio = reader.listen(source)
+            print(audio)
             try:
                 text = reader.recognize_google(audio)
                 if "howdy" in text.lower(): # start listening when "Howdy"
