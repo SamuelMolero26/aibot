@@ -2,7 +2,7 @@
 <html>
 <head>
     <title>Daskboard</title>
-    <link rel="stylesheet" href="{% static '../static/pretty.css' %}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='pretty.css') }}">
 </head>
 <body>
     <input class="dark-light" type="checkbox" id="dark-light" name="dark-light"/>
@@ -16,15 +16,8 @@
         <input class="dropdown" type="checkbox" id="dropdown" name="dropdown"/>
         <label class="for-dropdown" for="dropdown">Dropdown Menu <i class="uil uil-arrow-down"></i></label>
         <div class="section-dropdown"> 
-            <a href="#">Dropdown Link <i class="uil uil-arrow-right"></i></a>
-            <input class="dropdown-sub" type="checkbox" id="dropdown-sub" name="dropdown-sub"/>
-            <label class="for-dropdown-sub" for="dropdown-sub">Dropdown Sub <i class="uil uil-plus"></i></label>
-            <div class="section-dropdown-sub"> 
-                <a href="#">Dropdown Link <i class="uil uil-arrow-right"></i></a>
-                <a href="#">Dropdown Link <i class="uil uil-arrow-right"></i></a>
-            </div>
-            <a href="#">Dropdown Link <i class="uil uil-arrow-right"></i></a>
-            <a href="#">Dropdown Link <i class="uil uil-arrow-right"></i></a>
+            <a href="{{ url_for('todo') }}">TODO <i class="uil uil-arrow-right"></i></a>
+            <a href="login_register.html">Login page <i class="uil uil-arrow-right"></i></a>
         </div>
     </div>
 </body>

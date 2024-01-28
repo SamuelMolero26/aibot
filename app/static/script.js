@@ -115,6 +115,20 @@ function getLocalTodos() {
 
         todoList.appendChild(todoDiv);
     });
+
+    if (Notification.permission === "granted") {
+        const notification = new Notification("New todo item added", {
+            body: todoInput.value,
+        });
+    } else if (Notification.permission !== "denied") {
+        Notification.requestPermission().then(permission => {
+            if (permission === "granted") {
+                const notification = new Notification("New todo item added", {
+                    body: todoInput.value,
+                });
+            }
+        });
+    }
 }
 
 function removeLocalTodos(todo) {
