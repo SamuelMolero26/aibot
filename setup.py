@@ -1,34 +1,51 @@
-
-import openai
-from dotenv import load_dotenv
-import pyaudio
-import speech_recognition as sr
+import threading
+import time
+import drivers
+import RPi.GPIO as GPIO
 import openai
 import os
 from dotenv import load_dotenv
+import pyaudio
+import speech_recognition as sr
 import keyboard
-from RPLCD import CharLCD
-import time
-import RPi.GPIO as GPIO
 
+# Load the driver and set it to "display"
+display = drivers.Lcd()
 
+# Placeholder for the response text
+response_text = ""
 
+# Sound sensor GPIO pin (adjust as needed)
+SOUND_SENSOR_GPIO_PIN = 24
 
+# Threshold for loud sound detection (adjust as needed)
+LOUD_SOUND_THRESHOLD = 300
+
+# Load the OpenAI API key
 load_dotenv()
-
 openai.api_key = os.getenv("CLIENT_KEY")
 
-GPIO.setmode(GPIO.BCM)
+# Function to display text on the LCD
+def display_text(text):
+    display.lcd_clear()
+    display.lcd_display_string(text, 1)
 
-TOUCH_SENSOR_PIN = 4
-GPIO.setup(TOUCH_SENSOR_PIN, GPIO.IN)
+# Function to continuously update the LCD with response text
+def update_lcd():
+    while True:
+        display_text(response_text)
+        time.sleep(1)
 
+# Function to handle loud sound events
+def handle_loud_sound(channel):
+    global response_text
+    response_text = "Loud Sound Detected!"
+
+# Function to generate text from speech
 def textGenerator():
     reader = sr.Recognizer()
     reader.pause_threshold = 0.6
     reader.non_speaking_duration = 0.2  
-    microphones = sr.Microphone.list_microphone_names()
-    print(microphones)
     
     # Read from the microphone
     with sr.Microphone() as source:
@@ -45,75 +62,44 @@ def textGenerator():
                 if keyboard.is_pressed('esc'):
                     print("Stopped listening.")
                     return None
-            except sr.UnknownValueError:
+            except:
                 pass
-            except sr.RequestError as e:
-                print(f"Could not request results from Google Speech Recognition service; {e}")
 
-        # Continuous listening loop
-        while True:
-            audio = reader.listen(source)
-            try:
-                text = reader.recognize_google(audio)
-                print("You said: {}".format(text))
-                return text
-            except sr.UnknownValueError:
-                pass
-            except sr.RequestError as e:
-                print(f"Could not request results from Google Speech Recognition service; {e}")
-            except KeyboardInterrupt:
-                print("Stopped listening.")
-                return None
-            except Exception as e:
-                print(f"Error: {e}")
-            
-            if keyboard.is_pressed('esc'):
-                print("Stopped listening.")
-                return None
-
-def openChat(prompt):
-    if prompt.lower() == "read notification":
-        todos = ['Finish the project', 'Do the laundry', 'Buy groceries', 'Call mom']
-        print("Reading notifications...")
-        return todos
-    else:
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": "You are a helpful assistant."},
-                {"role": "user", "content": prompt},
-            ],
-            max_tokens=100
-        )
-        return response.choices[0].message.content.strip()
-def measure_heart_rate():
-    heartbeats = 0
-
-    start_time = time.time()
-    while time.time() - start_time < 15:
-        if GPIO.input(TOUCH_SENSOR_PIN):
-            heartbeats += 1
-            
-            time.sleep(0.6)
-    heart_rate = heartbeats * 4
-
-    return heart_rate
-
-def display_response(response,hear_rate):
-    lcd = CharLCD(cols=16, rows=2, pin_rs=37, pin_e=35, pins_data=[40, 38, 36, 32, 33, 31, 29, 23])
-    lcd.write_string(u'{}'.format(response))
-    lcd.write_string(u'{} HR: {}'.format(response, heart_rate))
-    
-   
+        # Listen for the actual command
+        audio = reader.listen(source)
+        try:
+            text = reader.recognize_google(audio)
+            print("You said : {}".format(text))
+            return text
+        except:
+            print("Sorry could not recognize what you said")
+            return None
 
 if __name__ == '__main__':
-    while True:
-        prompt = textGenerator()
-        if prompt is not None:
-            response = openChat(prompt)
-            heart_rate = measure_heart_rate()  
-            display_response(response, heart_rate)
-            print("AI: ", response)
-            
-        else:
-            break
+    # Set up interrupt for sound sensor
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(SOUND_SENSOR_GPIO_PIN, GPIO.IN)
+    GPIO.add_event_detect(SOUND_SENSOR_GPIO_PIN, GPIO.RISING, callback=handle_loud_sound, bouncetime=200)
+
+    # Start the LCD thread
+    lcd_thread = threading.Thread(target=update_lcd)
+    lcd_thread.start()
+
+    try:
+        # Main loop
+        while True:
+            # Your main program logic goes here
+            if GPIO.input(SOUND_SENSOR_GPIO_PIN) == GPIO.HIGH:
+                # Check if the sound level is above the threshold
+                if response_text != "Loud Sound Detected!" and GPIO.input(SOUND_SENSOR_GPIO_PIN) > LOUD_SOUND_THRESHOLD:
+                    response_text = "Loud Sound Detected!"
+            else:
+                response_text = textGenerator() or "No Loud Sound"
+           
+            time.sleep(1)
+
+    except KeyboardInterrupt:
+        # If there is a KeyboardInterrupt (when you press ctrl+c), exit the program and cleanup
+        print("Cleaning up!")
+        GPIO.cleanup()
+        lcd_thread.join()
