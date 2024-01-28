@@ -16,17 +16,46 @@
                 <input type="text" class="input-field" placeholder="User Id" required>
                 <input type="text" class="input-field" placeholder="Enter Password" required>
                 <input type="checkbox" class="check-box" placeholder="check-box"> <span>Remember Password</span>
-                <button type="submit" class="submit-btn">Log In</button>
+                <button class="submit-btn" onclick="press_login()" method="POST">Log In</button>
             </form>
-            <form id="register" class="input-group">
+            <form id="register" class="input-group" method="POST">
                 <input type="text" class="input-field" placeholder="User Id" required>
                 <input type="email" class="input-field" placeholder="Enter email" required>
                 <input type="text" class="input-field" placeholder="Enter Password" required>
                 <input type="checkbox" class="check-box" placeholder="check-box"> <span>I agree to the terms & conditions</span>
                 <button type="submit" class="submit-btn">Register</button>
             </form>
+            </form>
         </div>
         <script>
+            function press_login(){
+                const serverUrl = 'http://localhost:5000/dashboard';
+
+        
+                const formData = new FormData();
+                formData.append('user_id', 'admin');
+                formData.append('password', 'password');
+
+                fetch(serverUrl, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log(data); 
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+        
+                });
+                
+            }
+
             var x = document.getElementById("login");
             var y = document.getElementById("register");
             var z = document.getElementById("btn");
@@ -43,22 +72,6 @@
                 z.style.left = "0px";
             }
         </script>
-    <script>
-        var x = document.getElementById("login");
-        var y = document.getElementById("register");
-        var z = document.getElementById("btn");
-
-        function register(){
-            x.style.left = "-450px";
-            y.style.left = "50px";
-            z.style.left = "110px";
-        }
-
-        function login(){
-            x.style.left = "50px";
-            y.style.left = "450px";
-            z.style.left = "0px";
-        }
-    </script>
+    
 </body>
 </html>
